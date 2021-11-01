@@ -74,23 +74,6 @@ def go_home():
     sleep(1)
     click(930, 1125)
 
-# Helper method to get screenshot of round, then read what the round is
-def get_current_round():
-    # First, get the image on the screen and get the text from the image
-    image = pyautogui.screenshot(region=(1920, 8, 160, 90))
-    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-    cv2.imwrite("round.png", image)
-    text = pytesseract.image_to_string(image)
-
-    # Then, get substring that is the actual round number and return it
-    # Use try/accept because if cv cannot recognise the text, then there will be index and string errors.
-    try:
-        index = text.index('/')
-        return text[index - 2 : index]
-    except:
-        print(text)
-        return -1
-
 # Take screenshot. If same as 'go_btn.png' then the round has 'finished', and return true
 def get_round_status():
     image = pyautogui.screenshot(region=(2364, 1278, 158, 151))
