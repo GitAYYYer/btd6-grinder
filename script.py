@@ -22,6 +22,8 @@ MIDDLEX = WIDTH/2
 MIDDLEY = HEIGHT/2
 HERO_POS = (2300, 280)
 DART_POS = (2420, 234)
+BOOMERANG_POS = (2276, 469)
+BOMB_POS = (2438, 468)
 SUB_POS = (2280, 970)
 SNIPER_POS = (2436, 806)
 GO_POS = (2448, 1350)
@@ -58,6 +60,14 @@ def get_hero():
 def get_dart():
     click(DART_POS[0], DART_POS[1])
 
+# Clicks on boomerang monkey but does not place it
+def get_boomerang():
+    click(BOOMERANG_POS[0], BOOMERANG_POS[1])
+
+# Clicks on bomb tower but does not place it
+def get_bomb():
+    click(BOMB_POS[0], BOMB_POS[1])
+
 # Clicks on sub in buy menu but does not place it
 def get_sub():
     click(SUB_POS[0], SUB_POS[1])
@@ -71,7 +81,7 @@ def get_sniper():
 def go_home():
     sleep(1)
     click(1280, 1210)
-    sleep(1)
+    sleep(0.5)
     click(930, 1125)
 
 # Take screenshot. If same as 'go_btn.png' then the round has 'finished', and return true
@@ -99,6 +109,21 @@ def setup_hero_dart_sub(heroX, heroY, dartX, dartY, subX, subY):
 
     get_sub()
     click(subX, subY)
+
+    # Click twice to make it go double speed
+    click(GO_POS[0], GO_POS[1])
+    click(GO_POS[0], GO_POS[1])
+
+# Same concept as setup_hero_dart_sub, except uses sniper in place of sub
+def setup_hero_dart_sniper(heroX, heroY, dartX, dartY, sniperX, sniperY):
+    get_hero()
+    click(heroX, heroY)
+
+    get_dart()
+    click(dartX, dartY)
+
+    get_sniper()
+    click(sniperX, sniperY)
 
     # Click twice to make it go double speed
     click(GO_POS[0], GO_POS[1])
@@ -166,6 +191,76 @@ def sanctuary():
     # Go back to main menu
     go_home()
 
+def ravine():
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sniper(1602, 641, 935, 143, 1381, 263)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 2:
+                # Set first sniper to target strong
+                click(1381, 264)
+                click(120, 500)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 13:
+                # Upgrade 1st sniper
+                click(1381, 263)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 21:
+                # Upgrade 1st sniper
+                click(1381, 263)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+
+                # Buy boomerang to clean up
+                get_boomerang()
+                click(991, 1093)
+                click(991, 1093)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 35:
+                # Upgrade 1st sniper
+                click(1381, 263)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+
+                # Upgrade boomerang
+                click(991, 1093)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 36:
+                # Buy bomb
+                click(924, 236)
+                click(924, 236)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(MIDDLEX, MIDDLEY)
+                
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
 def flooded():
     current_round = 1
     done = False
@@ -195,6 +290,279 @@ def flooded():
 
             elif current_round == 29:
                 # Can just click bottom upgrade, upgrade menu is still open
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
+def infernal():
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sub(2138, 644, 619, 374, 567, 1105)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 10:
+                # Upgrade dart monkey
+                click(619, 374)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+
+                # Upgrade 1st sub
+                click(567, 1105)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+                # Buy 2nd sub, upgrade it
+                get_sub()
+                click(1540, 316)
+                click(1540, 316)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 27:
+                # Upgrade 1st sub
+                click(567, 1105)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+
+                # Upgrade 2nd sub
+                click(1540, 316)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 29:
+                # Upgrade 1st sub
+                click(567, 1105)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
+def bloody():
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sub(368, 144, 1570, 932, 805, 781)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 9:
+                # Buy sub on right side, upgrade it
+                get_sub()
+                click(1594, 261)
+                click(1594, 261)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(MIDDLEX, MIDDLEY) # Need to click off, to place left sub
+
+                # Buy sub on left side
+                get_sub()
+                click(372, 580)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 21:
+                # Upgrade left sub
+                click(372, 580)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+
+                # Upgrade middle (1st) sub
+                click(805, 781)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+
+                # Upgrade right sub
+                click(1594, 261)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 36:
+                # Upgrade left sub
+                click(372, 580)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+
+                # Upgrade right sub
+                click(1594, 261)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
+def workshop():
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sniper(670, 660, 190, 830, 1365, 670)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 11:
+                # Upgrade sniper
+                click(1365, 670)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 21:
+                # Buy 2nd sniper, upgrade it. ALSO, set to strong.
+                get_sniper()
+                click(1309, 613)
+                click(1309, 613)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(120, 500) # X,Y for setting strong
+                click(MIDDLEX - 50, MIDDLEY)
+
+            elif current_round == 35:
+                # Upgrade 1st sniper
+                click(1365, 670)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+
+                # Upgrade 2nd sniper
+                click(1309, 613)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(MIDDLEX - 50, MIDDLEY)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
+def quad():
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sub(1042, 1142, 1560, 1040, 980, 625)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 15:
+                # Upgrade 1st sub
+                click(980, 625)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+
+                # Buy 2nd sub, click on it, upgrade it
+                get_sub()
+                click(1227, 600)
+                click(1227, 600)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 29:
+                # Upgrade 2nd sub
+                click(1227, 600)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 33:
+                # Upgrade 1st sub, to stop lots of leaks
+                click(980, 625)
+                click(RIGHT_SIDE_UPGRADES, SECOND_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
+def dark():
+    current_round = 1
+    done = False
+    
+    setup_hero_dart_sub(713, 618, 608, 1059, 1459, 574)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 18:
+                # Buy dart monkey
+                get_dart()
+                click(590, 410)
+
+                # Upgrade 1st sub
+                click(1459, 574)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+
+                # Buy new sub, make sure to click on it again after buying it
+                get_sub()
+                click(1444, 926)
+                click(1444, 926)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 30:
+                # Upgrade 2nd sub
+                click(1444, 926)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
                 click(MIDDLEX, MIDDLEY)
@@ -267,6 +635,69 @@ def muddy():
     # Go back to main menu
     go_home()
 
+def ouch():
+    # In the middle there is a removable object, so need to click off of it to proceed.
+    click(MIDDLEX, 100)
+
+    current_round = 1
+    done = False
+
+    setup_hero_dart_sub(715, 398, 1367, 212, 955, 810)
+    while not done:
+        finished = get_round_status()
+        if finished:
+            current_round += 1
+
+            if current_round == 15:
+                # Buy 2nd dart monkey
+                get_dart()
+                click(332, 901)
+
+                # Upgrade 1st sub
+                click(955, 810)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+                click(RIGHT_SIDE_UPGRADES, FIRST_TREE)
+
+                # Buy 2nd sub, upgrade it
+                get_sub()
+                click(1275, 631)
+                click(1275, 631)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+                click(LEFT_SIDE_UGPRADES, SECOND_TREE)
+                click(MIDDLEX, MIDDLEY)
+
+            elif current_round == 27:
+                # Upgrade 1st sub
+                click(955, 810)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+                
+                # Buy 3rd sub, cant buy 4th upgrade for 1st sub so might as well just chuck money to a 3rd sub
+                get_sub()
+                click(1305, 813)
+                click(1305, 813)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, FIRST_TREE)
+                click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+
+            elif current_round == 39:
+                # Shouldn't be necessary to win, but just in case, upgrade 1st sub
+                click(955, 810)
+                click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
+
+            elif current_round == 41:
+                done = True
+
+            # Before clicking next round, wait a moment
+            sleep(0.1)
+            click(GO_POS[0], GO_POS[1])
+
+    # Go back to main menu
+    go_home()
+
 if __name__ == '__main__':
     looping = True
     while looping:
@@ -279,11 +710,23 @@ if __name__ == '__main__':
         if mapInput == 's':
             sanctuary()
         elif mapInput == 'r':
-            print('hey')
+            ravine()
         elif mapInput == 'f':
             flooded()
+        elif mapInput == 'i':
+            infernal()
+        elif mapInput == 'b':
+            bloody()
+        elif mapInput == 'w':
+            workshop()
+        elif mapInput == 'q':
+            quad()
+        elif mapInput == 'd':
+            dark()
         elif mapInput == 'm':
             muddy()
+        elif mapInput == 'o':
+            ouch()
         elif mapInput == 'e':
             looping = False
             print('cya')
