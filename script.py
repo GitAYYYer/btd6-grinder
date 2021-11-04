@@ -242,6 +242,7 @@ def ravine():
 
             elif current_round == 36:
                 # Buy bomb
+                get_bomb()
                 click(924, 236)
                 click(924, 236)
                 click(RIGHT_SIDE_UPGRADES, THIRD_TREE)
@@ -287,9 +288,11 @@ def flooded():
                 click(LEFT_SIDE_UGPRADES, FIRST_TREE)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
 
             elif current_round == 29:
-                # Can just click bottom upgrade, upgrade menu is still open
+                # Upgrade 2nd sub
+                click(1338, 1045)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
                 click(MIDDLEX, MIDDLEY)
@@ -682,6 +685,7 @@ def ouch():
                 click(LEFT_SIDE_UGPRADES, FIRST_TREE)
                 click(LEFT_SIDE_UGPRADES, FIRST_TREE)
                 click(LEFT_SIDE_UGPRADES, THIRD_TREE)
+                click(MIDDLEX, MIDDLEY)
 
             elif current_round == 39:
                 # Shouldn't be necessary to win, but just in case, upgrade 1st sub
