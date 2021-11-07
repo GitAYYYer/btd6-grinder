@@ -4,6 +4,7 @@ This code is hardcoded as heck, but it works :)
 """
 
 import cv2
+import random
 import imagehash
 import pyautogui
 import numpy as np
@@ -13,13 +14,15 @@ from time import sleep
 from pynput.mouse import Button, Controller as MController
 from pynput.keyboard import Key, Controller as KController
 
-# Constants
+# Constants not related to game
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 CUTOFF = 5 # Used when comparing images
 WIDTH = 2560
 HEIGHT = 1440
 MIDDLEX = WIDTH/2
 MIDDLEY = HEIGHT/2
+
+# Constants related to game itself (the towers)
 HERO_POS = (2300, 280)
 DART_POS = (2420, 234)
 BOOMERANG_POS = (2276, 469)
@@ -27,6 +30,29 @@ BOMB_POS = (2438, 468)
 SUB_POS = (2280, 970)
 SNIPER_POS = (2436, 806)
 GO_POS = (2448, 1350)
+
+# Constants related to the maps
+TOTAL_EXPERT_MAPS = 10
+MAPS = ['sanctuary', 'ravine', 'flooded', 'infernal', 'bloody', 'workshop', 'quad', 'dark', 'muddy', 'ouch']
+MAP_POSITIONS = {
+    'sanctuary': (718, 350),
+    'ravine': (1286, 350),
+    'flooded': (1846, 350),
+    'infernal': (718, 770),
+    'bloody': (1286, 770),
+    'workshop': (1846, 770),
+
+    'quad': (718, 350),
+    'dark': (1286, 350),
+    'muddy': (1846, 350),
+    'ouch': (718, 770),
+}
+
+# Constants related to home screen
+HOME_PLAY_BTN = (1108, 1242)
+HOME_EXPERT_MAP_ICON = (1784, 1300)
+HOME_EASY_MODE_ICON = (836, 548)
+HOME_EASY_STANDARD_PLAY_ICON = (848, 776)
 
 # Refers to the X pos of the upgrade menu, being either left or right side depending on monkey pos.
 LEFT_SIDE_UGPRADES = 440
@@ -79,7 +105,7 @@ def get_sniper():
 # After finishing 40 rounds, click on the following buttons to go to main menu
 # Remember the finish screens take time to open, so sleep for a moment.
 def go_home():
-    sleep(1)
+    sleep(1.5)
     click(1280, 1210)
     sleep(0.5)
     click(930, 1125)
@@ -702,38 +728,131 @@ def ouch():
     # Go back to main menu
     go_home()
 
+# Basic 2d loop to screenshot each map, then compare each map to each of the screenshots of them with bonus rewards, and return the name of the map with the bonus rewards.
+# TODO: Since no collection event currently, just choose a random map.
+def check_bonus_rewards_map():
+    mapCounter = 0
+    startingX = 436
+    startingY = 140
+    screenshotWidth = 560
+    screenshotHeight = 432
+
+    # The maps are laid out in 2 rows, 3 columns, need to loop through each column, then each row
+    for y in range(2):
+        for x in range(3):
+            mapCounter += 1
+            image = pyautogui.screenshot(region=(startingX + (x * 564), startingY + (y * 432), screenshotWidth, screenshotHeight))
+            image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            cv2.imwrite('current_map_screenshot.png', image)
+
+            # Now, compare this image to the existing images in the project, to see which one has the bonus rewards.
+            # TODO: maybe use opencv to see if 'bonus rewards' exists in the image? Each collection event has diff image for bonus rewards.
+            #       Instead, do nothing for now without the collection event.
+
+    # Reaching this point means I need to goto the next page of expert maps, so click on expert icon again
+    click(1784, 1300)
+
+    # Same as above 2d loop, but do early return since there are less than 6 maps here
+    for y in range(2):
+        for x in range(3):
+            mapCounter += 1
+            image = pyautogui.screenshot(region=(startingX + (x * 564), startingY + (y * 432), screenshotWidth, screenshotHeight))
+            image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            cv2.imwrite('current_map_screenshot.png', image)
+
+            # Same comparison as above
+
+            # Currently, only 10 expert maps. If code scans 10 maps and no match, choose a map from the current screen.
+            if mapCounter == TOTAL_EXPERT_MAPS:
+                return MAPS[random.randint(7, TOTAL_EXPERT_MAPS - 1)]
+
+# This is for when the script is not fully automated. Takes user input and plays the map they request FROM INSIDE THE MAP (not from home menu)
+def handle_user_input():
+    mapInput = input("Map: ")
+    mapInput = mapInput.lower()
+
+    # After choosing a map, make sure to click to main screen (game)
+    if mapInput != 'e':
+        click_main_screen()
+
+    # Map will play out
+    if mapInput == 's':
+        sanctuary()
+    elif mapInput == 'r':
+        ravine()
+    elif mapInput == 'f':
+        flooded()
+    elif mapInput == 'i':
+        infernal()
+    elif mapInput == 'b':
+        bloody()
+    elif mapInput == 'w':
+        workshop()
+    elif mapInput == 'q':
+        quad()
+    elif mapInput == 'd':
+        dark()
+    elif mapInput == 'm':
+        muddy()
+    elif mapInput == 'o':
+        ouch()
+    elif mapInput == 'e':
+        looping = False
+        print('cya')
+    else:
+        print('??? lol')
+
 if __name__ == '__main__':
     looping = True
+
+    # Start of loop: Choose a map
     while looping:
-        mapInput = input("Map: ")
-        mapInput = mapInput.lower()
+        # handle_user_input()
 
-        if mapInput != 'e':
-            click_main_screen()
+        # Back on home screen, check if need to collect from collection event
+        # TODO: do detection to see if 'collect' button exists in middle of screen (that indicates you need to collect rewards)
 
-        if mapInput == 's':
+        # At this point, it is confirmed on home screen. Click in specific positions to goto expert maps.
+        sleep(1.5)
+        click(HOME_PLAY_BTN[0], HOME_PLAY_BTN[1])
+        sleep(0.5)
+        click(HOME_EXPERT_MAP_ICON[0], HOME_EXPERT_MAP_ICON[1])
+
+        # Now, take a screenshot of each map and find the one with bonus rewards
+        # TODO: Check which one has bonus rewards by comparing to initial images in reference folder. For now, get a random one.
+        bonusMap = check_bonus_rewards_map()
+
+        # After finding which map it is, click on that map's position
+        click(MAP_POSITIONS[bonusMap][0], MAP_POSITIONS[bonusMap][1])
+        sleep(1)
+
+        # Click on the easy mode icon, then the standard play button
+        click(HOME_EASY_MODE_ICON[0], HOME_EASY_MODE_ICON[1])
+        sleep(1)
+        click(HOME_EASY_STANDARD_PLAY_ICON[0], HOME_EASY_STANDARD_PLAY_ICON[1])
+
+        # This method of sleep is pretty unreliable, since I'm not sure if each map takes the same amount of time to load up or not.
+        # Regardless, give a generous wait time.
+        sleep(5)
+
+        if bonusMap == 'sanctuary':
             sanctuary()
-        elif mapInput == 'r':
+        elif bonusMap == 'ravine':
             ravine()
-        elif mapInput == 'f':
+        elif bonusMap == 'flooded':
             flooded()
-        elif mapInput == 'i':
+        elif bonusMap == 'infernal':
             infernal()
-        elif mapInput == 'b':
+        elif bonusMap == 'bloody':
             bloody()
-        elif mapInput == 'w':
+        elif bonusMap == 'workshop':
             workshop()
-        elif mapInput == 'q':
+        elif bonusMap == 'quad':
             quad()
-        elif mapInput == 'd':
+        elif bonusMap == 'dark':
             dark()
-        elif mapInput == 'm':
+        elif bonusMap == 'muddy':
             muddy()
-        elif mapInput == 'o':
+        elif bonusMap == 'ouch':
             ouch()
-        elif mapInput == 'e':
-            looping = False
-            print('cya')
-        else:
-            print('??? lol')
 
