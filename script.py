@@ -47,12 +47,18 @@ MAP_POSITIONS = {
     'muddy': (1846, 350),
     'ouch': (718, 770),
 }
+BONUS_REWARDS_PIXEL = (540, 308)
+BONUS_RGB_CUTOFF = (240, 200, 0)
+MONKEY_KNOWLEDGE_PIXEL = (255, 177)
+MONKEY_KNOWLEDGE_RGB_CUTOFF = (140, 80, 200)
 
 # Constants related to home screen
 HOME_PLAY_BTN = (1108, 1242)
 HOME_EXPERT_MAP_ICON = (1784, 1300)
 HOME_EASY_MODE_ICON = (836, 548)
 HOME_EASY_STANDARD_PLAY_ICON = (848, 776)
+COLLECT_BTN = (1281, 903)
+COLLECTION_BACK_BTN = (106, 70)
 
 # Refers to the X pos of the upgrade menu, being either left or right side depending on monkey pos.
 LEFT_SIDE_UGPRADES = 440
@@ -124,6 +130,41 @@ def get_round_status():
     else:
         return False
 
+# After finishing a map, check if the collect button is on screen.
+def get_collect_status():
+    image = pyautogui.screenshot(region=(1104, 837, 354, 136))
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    cv2.imwrite("collect_status.png", image)
+
+    current = imagehash.average_hash(Image.open('collect_status.png'))
+    original = imagehash.average_hash(Image.open('collect_btn.png'))
+
+    if current - original < CUTOFF:
+        return True
+    else:
+        return False
+
+# During each loop iteration, checks for certain colour pixels to see if player leveled up, and handles it by clicking.
+def handle_level_up():
+    screenshot = pyautogui.screenshot(region=(1045, 455, 490, 390))
+    screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    cv2.imwrite('level_up_check.png', screenshot)
+
+    image = Image.open('level_up_check.png')
+    colour = image.getpixel(MONKEY_KNOWLEDGE_PIXEL)
+
+    # In this case, click on the middle of the screen to get rid of the monkey knowledge alert
+    if colour[0] >= MONKEY_KNOWLEDGE_RGB_CUTOFF[0] and colour[1] >= MONKEY_KNOWLEDGE_RGB_CUTOFF[1] and colour[2] >= MONKEY_KNOWLEDGE_RGB_CUTOFF[2]:
+        click(MIDDLEX, MIDDLEY)
+
+# After confirming collect and pressing collect button, need to collect all rewards.
+# Can many rewards, so click a lot of times from x = 0 -> 2560 with a decent step size.
+def collect_rewards():
+    for x in range(0, 2560, 30):
+        click(x, 720)
+    # Press collect button at the bottom
+    click(1284, 1332)
+
 # This method is used in most maps, where the opener on Round 1 can be hero, dart and sub.
 # X and Y are specific to each map, where you want to place your opener towers.
 def setup_hero_dart_sub(heroX, heroY, dartX, dartY, subX, subY):
@@ -161,6 +202,7 @@ def sanctuary():
 
     setup_hero_dart_sub(1113, 234, 1672, 564, 981, 237)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -223,6 +265,7 @@ def ravine():
 
     setup_hero_dart_sniper(1602, 641, 935, 143, 1381, 263)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -294,6 +337,7 @@ def flooded():
 
     setup_hero_dart_sub(288, 127, 690, 672, 1246, 228)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -339,6 +383,7 @@ def infernal():
 
     setup_hero_dart_sub(2138, 644, 619, 374, 567, 1105)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -397,6 +442,7 @@ def bloody():
 
     setup_hero_dart_sub(368, 144, 1570, 932, 805, 781)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -461,6 +507,7 @@ def workshop():
 
     setup_hero_dart_sniper(670, 660, 190, 830, 1365, 670)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -512,6 +559,7 @@ def quad():
 
     setup_hero_dart_sub(1042, 1142, 1560, 1040, 980, 625)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -563,6 +611,7 @@ def dark():
     
     setup_hero_dart_sub(713, 618, 608, 1059, 1459, 574)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -612,6 +661,7 @@ def muddy():
 
     setup_hero_dart_sub(452, 120, 1564, 393, 1025, 793)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -673,6 +723,7 @@ def ouch():
 
     setup_hero_dart_sub(715, 398, 1367, 212, 955, 810)
     while not done:
+        handle_level_up()
         finished = get_round_status()
         if finished:
             current_round += 1
@@ -729,7 +780,6 @@ def ouch():
     go_home()
 
 # Basic 2d loop to screenshot each map, then compare each map to each of the screenshots of them with bonus rewards, and return the name of the map with the bonus rewards.
-# TODO: Since no collection event currently, just choose a random map.
 def check_bonus_rewards_map():
     mapCounter = 0
     startingX = 436
@@ -740,14 +790,19 @@ def check_bonus_rewards_map():
     # The maps are laid out in 2 rows, 3 columns, need to loop through each column, then each row
     for y in range(2):
         for x in range(3):
-            mapCounter += 1
+            # Screenshot the next map
             image = pyautogui.screenshot(region=(startingX + (x * 564), startingY + (y * 432), screenshotWidth, screenshotHeight))
             image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-            cv2.imwrite('current_map_screenshot.png', image)
+            cv2.imwrite('maps/' + MAPS[mapCounter] + '.png', image)
 
-            # Now, compare this image to the existing images in the project, to see which one has the bonus rewards.
-            # TODO: maybe use opencv to see if 'bonus rewards' exists in the image? Each collection event has diff image for bonus rewards.
-            #       Instead, do nothing for now without the collection event.
+            # Check if a yellowish colour (from the words 'bonus rewards') appears at a pixel in the picture. If so, this map is the bonus map.
+            currentMap = Image.open('maps/' + MAPS[mapCounter] + '.png')
+            pixels = [i for i in currentMap.getdata()]
+
+            if (255, 220, 0) in pixels and pixels.count((255, 220, 0)) >= 150:
+                return MAPS[mapCounter]
+
+            mapCounter += 1
 
     # Reaching this point means I need to goto the next page of expert maps, so click on expert icon again
     click(1784, 1300)
@@ -755,71 +810,72 @@ def check_bonus_rewards_map():
     # Same as above 2d loop, but do early return since there are less than 6 maps here
     for y in range(2):
         for x in range(3):
-            mapCounter += 1
             image = pyautogui.screenshot(region=(startingX + (x * 564), startingY + (y * 432), screenshotWidth, screenshotHeight))
             image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-            cv2.imwrite('current_map_screenshot.png', image)
+            cv2.imwrite('maps/' + MAPS[mapCounter] + '.png', image)
 
-            # Same comparison as above
+            currentMap = Image.open('maps/' + MAPS[mapCounter] + '.png')
+            pixels = [i for i in currentMap.getdata()]
+
+            if (255, 220, 0) in pixels and pixels.count((255, 220, 0)) >= 150:
+                return MAPS[mapCounter]
+
+            mapCounter += 1
 
             # Currently, only 10 expert maps. If code scans 10 maps and no match, choose a map from the current screen.
             if mapCounter == TOTAL_EXPERT_MAPS:
                 return MAPS[random.randint(7, TOTAL_EXPERT_MAPS - 1)]
 
-# This is for when the script is not fully automated. Takes user input and plays the map they request FROM INSIDE THE MAP (not from home menu)
-def handle_user_input():
-    mapInput = input("Map: ")
-    mapInput = mapInput.lower()
+# Used only to screenshot maps in debug mode, to save the one with the bonus rewards icon
+def DEBUG_capture_maps():
+    # The maps are laid out in 2 rows, 3 columns, need to loop through each column, then each row
+    mapCounter = 0
+    startingX = 436
+    startingY = 140
+    screenshotWidth = 560
+    screenshotHeight = 432
 
-    # After choosing a map, make sure to click to main screen (game)
-    if mapInput != 'e':
-        click_main_screen()
+    for y in range(2):
+        for x in range(3):
+            image = pyautogui.screenshot(region=(startingX + (x * 564), startingY + (y * 432), screenshotWidth, screenshotHeight))
+            image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            cv2.imwrite('bonus_maps/' + str(MAPS[mapCounter]) + '.png', image)
 
-    # Map will play out
-    if mapInput == 's':
-        sanctuary()
-    elif mapInput == 'r':
-        ravine()
-    elif mapInput == 'f':
-        flooded()
-    elif mapInput == 'i':
-        infernal()
-    elif mapInput == 'b':
-        bloody()
-    elif mapInput == 'w':
-        workshop()
-    elif mapInput == 'q':
-        quad()
-    elif mapInput == 'd':
-        dark()
-    elif mapInput == 'm':
-        muddy()
-    elif mapInput == 'o':
-        ouch()
-    elif mapInput == 'e':
-        looping = False
-        print('cya')
-    else:
-        print('??? lol')
+            # Now, compare this image to the existing images in the project, to see which one has the bonus rewards.
+            # TODO: maybe use opencv to see if 'bonus rewards' exists in the image? Each collection event has diff image for bonus rewards.
+            #       Instead, do nothing for now without the collection event.
+            mapCounter += 1
 
 if __name__ == '__main__':
     looping = True
 
-    # Start of loop: Choose a map
-    while looping:
-        # handle_user_input()
+    # Clicks onto main screen since it will be on the terminal as soon as you run the script
+    click(MIDDLEX, MIDDLEY)
 
-        # Back on home screen, check if need to collect from collection event
-        # TODO: do detection to see if 'collect' button exists in middle of screen (that indicates you need to collect rewards)
+    # image = Image.open('maps/flooded.png')
+    # pixels = [i for i in image.getdata()]
+    # print(pixels.count((255, 220, 0)))
+    # exit(0)
+
+    while looping:
+        # On home screen, check if need to collect from collection event. Make sure to sleep first since there is a bit of delay going to home.
+        sleep(3.0)
+        collect_ready = get_collect_status()
+        if (collect_ready):
+            click(COLLECT_BTN[0], COLLECT_BTN[1])
+            sleep(1.5)
+            collect_rewards()
+
+            # After collecting, press back button to go back to home screen
+            click(COLLECTION_BACK_BTN[0], COLLECTION_BACK_BTN[1])
 
         # At this point, it is confirmed on home screen. Click in specific positions to goto expert maps.
-        sleep(1.5)
+        sleep(2.0)
         click(HOME_PLAY_BTN[0], HOME_PLAY_BTN[1])
         sleep(0.5)
         click(HOME_EXPERT_MAP_ICON[0], HOME_EXPERT_MAP_ICON[1])
 
-        # Now, take a screenshot of each map and find the one with bonus rewards
-        # TODO: Check which one has bonus rewards by comparing to initial images in reference folder. For now, get a random one.
+        # Now, take a screenshot of each map and find the one with bonus rewards.
         bonusMap = check_bonus_rewards_map()
 
         # After finding which map it is, click on that map's position
@@ -856,3 +912,9 @@ if __name__ == '__main__':
         elif bonusMap == 'ouch':
             ouch()
 
+    # image = pyautogui.screenshot(region=(2364, 1278, 158, 151))
+    # image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    # cv2.imwrite("round_status.png", image)
+
+    # current = imagehash.average_hash(Image.open('round_status.png'))
+    # original = imagehash.average_hash(Image.open('go_btn.png'))
